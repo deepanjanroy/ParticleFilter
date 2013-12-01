@@ -1,0 +1,21 @@
+<package>
+  <description brief="pfilter">
+
+     pfilter
+
+  </description>
+  <author>Deepanjan ROY</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pfilter</url>
+  <depend package="rospy"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="tf2"/>
+  <depend package="bullet"/>
+  <depend package="cv_bridge"/>
+
+</package>
+
+
