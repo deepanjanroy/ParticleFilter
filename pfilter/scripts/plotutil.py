@@ -11,10 +11,10 @@ import math
 
 def draw_direction(img, particle, length=10, thickness=1):
     """
-        Draws a line at the direction of the heading of a 
+        Draws a line at the direction of the heading of a
         particle so that you can see it on the map.
 
-        A particle is only a 3-tuple: (x, y, heading) - 
+        A particle is only a 3-tuple: (x, y, heading) -
         everything in cv coordinates.
     """
 
@@ -23,7 +23,7 @@ def draw_direction(img, particle, length=10, thickness=1):
     p2_x = int( p1[0] + length * math.cos(angle) )
     p2_y = int( p1[1] + length * math.sin(angle) )
     p2 = (p2_x, p2_y)
-    cv2.line(img, p1, p2, 0, 3)
+    cv2.line(img, p1, p2, color=0, thickness=thickness)
 
 
 def in_free_space(img, x, y):
@@ -42,12 +42,12 @@ def heading_from_qt(q):
     """
         Gets the Stage heading from the quaternions given in stage.
         Heading is in Stage coordinates - it increases counter-clockwise.
-    """ 
+    """
     preshifted = tf.transformations.euler_from_quaternion(
                                       (q.x, q.y, q.z, q.w))[2]
 
     shifted = preshifted + (math.pi / 2)
-    
+
     if shifted >= math.pi:
         return shifted - 2 * math.pi
     else:
@@ -58,7 +58,7 @@ class Transformer:
 
     def delta_stage_to_cv(self, state_delta):
         """
-            Convert a particle position delta from stage 
+            Convert a particle position delta from stage
             coordinates to opencv coordinates. This will
             really only work to convert deltas, because
             I disregard the different positions of the origin.

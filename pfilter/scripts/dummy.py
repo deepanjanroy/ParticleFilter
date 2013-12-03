@@ -17,6 +17,9 @@ class Dummy:
     # Your robot turns, and you have access to new_pose and end_pose. Simulate the same
     # pose change on each of the particles.
 
+    # Problem:
+    # Cache the last processes position, and update the state delta upon callback
+
     other_particle = (50,50,1.2)
 
     old_robot = (100, 100, .5)
