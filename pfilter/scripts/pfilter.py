@@ -54,6 +54,7 @@ class ParticleFilter:
             cv2.imshow("Particle filter", self.map)
             cv2.waitKey(1)
 
+
     def plot_particle(self, particle):
         pass
 

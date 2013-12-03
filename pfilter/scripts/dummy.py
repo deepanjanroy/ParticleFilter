@@ -14,10 +14,19 @@ import conversion
 class Dummy:
     
     # Problem Statement:
-    # You have a laser stream and a odom stream, both of which are
-    # time-stamped. Implement a method and will produce a stream of
-    # combined laser and odom data, with matching time_stamps.
+    # Your robot turns, and you have access to new_pose and end_pose. Simulate the same
+    # pose change on each of the particles.
 
+    other_particle = (50,50,1.2)
+
+    old_robot = (100, 100, .5)
+    new_robot = (133, 142, .6)
+
+    # Problem Statement:
+    # Write a function to check if the robot runs into an obstacle.
+    # The best way to handle this would probably be by defining a configuration space,
+    # but that is too much work at the moment. Let's just assusme that you will reject
+    # a point only if it's a real obstacle
 
     def odom_callback(self, data):
         # rospy.loginfo(rospy.get_name() + ": I heard %s" %data.header.stamp.secs)
@@ -33,6 +42,8 @@ class Dummy:
         print "########"
         print odom
         print laser
+
+
 
     # def listener(self):
     #     rospy.init_node('listener', anonymous=True)
