@@ -4,9 +4,6 @@ roslib.load_manifest('tf')
 import tf
 import math
 
-# Problem: The stage coordinates and the cv image coordinates do not coincide. Fix it. 
-# For this assignment, we keep everything in cv coordinates. Propagation will need to be solved carefully.
-
 def draw_direction(img, particle, length=10, thickness=1):
     """
         Draws a line at the direction of the heading of a 
