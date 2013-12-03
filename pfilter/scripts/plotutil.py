@@ -4,6 +4,11 @@ roslib.load_manifest('tf')
 import tf
 import math
 
+"""
+    Unless otherwise notes, all coordinates are in OpenCV coordinates."
+"""
+
+
 def draw_direction(img, particle, length=10, thickness=1):
     """
         Draws a line at the direction of the heading of a 
@@ -19,6 +24,18 @@ def draw_direction(img, particle, length=10, thickness=1):
     p2_y = int( p1[1] + length * math.sin(angle) )
     p2 = (p2_x, p2_y)
     cv2.line(img, p1, p2, 0, 3)
+
+
+def in_free_space(img, x, y):
+    """
+        Checks if a point has valid coordinates.
+        Returns false if point coincides with an obstacle,
+        or if the coordinates are out of bounds.
+    """
+    try:
+        return img[x, y] != 0
+    except IndexError:
+        return False
 
 
 def heading_from_qt(q):
@@ -84,3 +101,5 @@ class Transformer:
 
         self.cv_x_factor = float(img_x_length) / float(stage_y_length)
         self.cv_y_factor = float(img_y_length) / float(stage_x_length)
+
+

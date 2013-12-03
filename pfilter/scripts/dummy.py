@@ -22,12 +22,6 @@ class Dummy:
     old_robot = (100, 100, .5)
     new_robot = (133, 142, .6)
 
-    # Problem Statement:
-    # Write a function to check if the robot runs into an obstacle.
-    # The best way to handle this would probably be by defining a configuration space,
-    # but that is too much work at the moment. Let's just assusme that you will reject
-    # a point only if it's a real obstacle
-
     def odom_callback(self, data):
         # rospy.loginfo(rospy.get_name() + ": I heard %s" %data.header.stamp.secs)
         a = (data.pose.pose.orientation)
