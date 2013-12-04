@@ -18,13 +18,18 @@ def draw_direction(img, particle, length=10, thickness=1):
         everything in cv coordinates.
     """
 
-    p1 = (int (particle[0]), int(particle[1]))
+    p1 = (int (particle[1]), int(particle[0]))
     angle = particle[2]
     p2_x = int( p1[0] + length * math.cos(angle) )
     p2_y = int( p1[1] + length * math.sin(angle) )
     p2 = (p2_x, p2_y)
-    cv2.line(img, p1, p2, color=0, thickness=thickness)
-
+    try:
+        # from IPython import embed; embed()
+        cv2.line(img, p1, p2, color=0, thickness=thickness)
+    except IndexError:
+        if length < 3:
+            return
+        draw_direction(img, particle, length=float(length)/2)
 
 def in_free_space(img, x, y):
     """
@@ -38,6 +43,16 @@ def in_free_space(img, x, y):
         return False
 
 
+def add_angle(angle_1, angle_2):
+    ret = angle_1 + angle_2
+
+    if ret >= math.pi:
+        return ret - 2 * math.pi
+    elif ret <= -math.pi:
+        return ret + 2 * math.pi
+    else:
+        return ret
+
 def heading_from_qt(q):
     """
         Gets the Stage heading from the quaternions given in stage.
@@ -46,13 +61,7 @@ def heading_from_qt(q):
     preshifted = tf.transformations.euler_from_quaternion(
                                       (q.x, q.y, q.z, q.w))[2]
 
-    shifted = preshifted + (math.pi / 2)
-
-    if shifted >= math.pi:
-        return shifted - 2 * math.pi
-    else:
-        return shifted
-
+    return add_angle(preshifted, math.pi / 2)
 
 class Transformer:
 

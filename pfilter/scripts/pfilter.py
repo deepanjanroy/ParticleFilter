@@ -14,29 +14,20 @@ from sensor_msgs.msg import LaserScan
 from pfilter_exceptions import ImageLoadError
 import plotutil as ptl
 
-class Particle:
-
-    def __init__(self, x,y,h):
-        self.x = x
-        self.y = y
-        self.h = h
-
-    @property
-    def tuple(self):
-        return (self.x, self.y, self.h)
-
-    def draw(self):
-        pass
-
 
 class ParticleFilter:
+    """
+        Particles are defined to be a 3-tuple: (x, y, heading)
+    """
+
+    particles = [(80, 400, 0), (100, 20, 0), (400,100, 1.56)]
 
     def sync_callback(self, odom, laser):
         stage_x = odom.pose.pose.position.x
         stage_y = odom.pose.pose.position.y
         stage_orientation = odom.pose.pose.orientation
-        self.last_received_odom_stage = (stage_x, stage_y,
-                                         stage_orientation)
+        self.last_received_state = self.tr.stage_to_cv((stage_x, stage_y,
+                                         ptl.heading_from_qt(stage_orientation)))
 
     def register_listeners(self):
         odom_sub = message_filters.Subscriber('odom', Odometry)
@@ -44,78 +35,85 @@ class ParticleFilter:
         ts = message_filters.TimeSynchronizer([odom_sub, laser_sub], 1)
         ts.registerCallback(self.sync_callback)
 
-    def dev_process_data(self):
-        # This function can be optimized. Right now it's written
-        # for maximum readability, not maximum correctness.
+    def calculate_delta(self):
+        if self.last_received_state == None:
+            return (0, 0, 0)
 
-        received_stage = self.last_received_odom_stage
-        processed_stage = self.last_processed_odom_stage
+        if self.last_processed_state == None:
+            self.last_processed_state = self.last_received_state
+            return (0, 0, 0)
 
-        print received_stage
-        print "Processed " + str(processed_stage)
+        # Copying over the variables so that the callback threads
+        # can't change them midway through calculations.
+        rec = self.last_received_state
+        proc = self.last_processed_state
 
-        if received_stage == None:
-            return
-        if processed_stage == None:
-            self.last_processed_odom_stage = received_stage
-            return
+        dx = rec[0] - proc[0]
+        dy = rec[1] - proc[1]
+        dh = ptl.add_angle(rec[2], - proc[2])
 
-        received = list(received_stage)
-        processed = list(processed_stage)
-
-        received[2] = ptl.heading_from_qt(received[2])
-        processed[2] = ptl.heading_from_qt(processed[2])
-
-        delta = [received[i] - processed[i] for i in xrange(3)]
-
-        converted_delta = self.tr.delta_stage_to_cv(delta)
-
-        self.last_processed_odom_stage = self.last_received_odom_stage
-        self.last_known_state_cv = tuple(
-                [self.last_known_state_cv[i] + converted_delta[i]
-                for i in xrange(3)])
-
-
+        self.last_processed_state = rec
+        return (dx, dy, dh)
 
     def spin(self):
+        r = rospy.Rate(10)
         while not rospy.is_shutdown():
             # self.propagate()
             # self.update()
             # self.resample()
 
             # Dev
-            self.dev_process_data()
-            self.plot_particle(self.last_known_state_cv)
+            # self.dev_process_data()
+            self.clear_particles()
+            self.plot_all_particles()
 
+            delta = self.calculate_delta()
+            self.propagate(*delta)
             cv2.imshow("Particle filter", self.map)
             cv2.waitKey(1)
+            r.sleep()
 
-    def __init__(self, map_path, num_particles, eval_degree,
-                        stage_x=50, stage_y=50):
+    def __init__(self, map_path, num_particles, eval_degree, stage_x=50, stage_y=50):
+
         self.map = cv2.imread(map_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
         if self.map == None:
             raise ImageLoadError
 
+
+        self.map_clean = self.map.copy()
         cv2.namedWindow("Particle filter")
 
         rospy.init_node('particle_filter', anonymous=True)
         self.register_listeners()
 
-        self.last_processed_odom_stage = None
-        self.last_received_odom_stage = None
-        self.last_known_state_cv = (100, 100, 0)
+
+        self.last_processed_state = None
+        self.last_received_state = None
         self.tr = ptl.Transformer(stage_x, stage_y, *(self.map.shape))
 
+        self.num_particles = num_particles
+        # self.initialize_particles()
 
     def plot_particle(self, particle):
-        self.map[particle[0], particle[1]] = random.randint(0,255)
+        try:
+            if not (particle[0] < 0 or particle[1] < 0):
+                self.map[particle[0], particle[1]] = random.randint(0,255)
+        except IndexError:
+            return
+
+    def plot_particle_with_direction(self, particle):
         ptl.draw_direction(self.map, particle)
+        self.plot_particle(particle)
 
     def plot_all_particles(self):
-        pass
+        for particle in self.particles:
+            self.plot_particle_with_direction(particle)
 
     def clear_particles(self):
-        pass
+        """
+            Clears particles from the map. Not from the particle list
+        """
+        self.map = self.map_clean.copy()
 
     def replot(self):
         pass
@@ -124,7 +122,13 @@ class ParticleFilter:
         pass
 
     def propagate(self, dx, dy, dh):
-        pass
+        for i,p in enumerate(self.particles):
+            x = p[0] + dx
+            y = p[1] + dy
+            h = ptl.add_angle(p[2], dh)
+
+            self.particles[i] = (x,y,h)
+
 
     def update_weights(self):
         pass
@@ -148,7 +152,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except rospy.exceptions.ROSInterruptException:
+        pass
 
 
 

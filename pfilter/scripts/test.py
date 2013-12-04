@@ -20,5 +20,12 @@ class TestTransformations(unittest.TestCase):
             for i in xrange(len(ret_tuple)):
                 self.assertAlmostEqual(ret_tuple[i], correct_rets[i])
 
+        self.assertEqual(type(tr.stage_to_cv((0,0,0))), tuple)
+
+    def test_add_angle(self):
+        self.assertAlmostEqual(ptl.add_angle( math.pi / 2, math.pi), - math.pi / 2)
+        self.assertAlmostEqual(ptl.add_angle( .5, .5), 1.0)
+        self.assertAlmostEqual(ptl.add_angle( - math.pi / 2, math.pi), math.pi / 2)
+
 if __name__ == '__main__':
     unittest.main()
