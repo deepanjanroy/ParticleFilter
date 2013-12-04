@@ -88,18 +88,29 @@ class ParticleFilter:
 
         self.last_processed_state = None
         self.last_received_state = None
+        self.last_laser_state = None
         self.tr = ptl.Transformer(stage_x, stage_y, *(self.map.shape))
 
         self.num_particles = num_particles
         self.initialize_particles()
 
     def initialize_particles(self):
-        self.particles = []
-        for i in xrange(self.num_particles):
+
+        def new_particle(self):
             x = random.randint(0, self.map.shape[1] - 1)
             y = random.randint(0, self.map.shape[0] - 1)
             h = random.uniform(-math.pi, math.pi)
-            self.particles.append((x,y,h))
+
+            p = (x, y, h)
+            if ptl.in_free_space(self.map, x, y):
+                return p
+            else:
+                return new_particle(self)
+
+        self.particles = []
+        for i in xrange(self.num_particles):
+
+            self.particles.append(new_particle(self))
 
     def plot_particle(self, particle):
         try:
@@ -136,9 +147,10 @@ class ParticleFilter:
 
             self.particles[i] = (x,y,h)
 
-
     def update_weights(self):
-        pass
+        for particle in self.particles:
+            ptl.get_closest_obstacle(self.map_clean, particle, max_range=300)
+            difference =
 
 
 def main():

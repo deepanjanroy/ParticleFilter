@@ -8,6 +8,28 @@ import math
     Unless otherwise notes, all coordinates are in OpenCV coordinates."
 """
 
+def get_closest_obstacle(img, particle, max_range, angle=None):
+    """
+        Make sure the img is clean - i.e. no particles.
+    """
+
+    lookup = img.item
+    px = particle[0]
+    py = particle[1]
+    if angle == None:
+        angle = particle[2]
+
+    x_comp = math.sin(angle)
+    y_comp = math.cos(angle)
+
+    for r in xrange(5, max_range):
+        x = px + r * x_comp
+        y = py + r * y_comp
+
+        if lookup((x,y)) == 0 :
+            return r
+
+    return max_range
 
 def draw_direction(img, particle, length=10, thickness=1):
     """
@@ -38,7 +60,7 @@ def in_free_space(img, x, y):
         or if the coordinates are out of bounds.
     """
     try:
-        return img[x, y] != 0
+        return img[y, x] != 0
     except IndexError:
         return False
 
