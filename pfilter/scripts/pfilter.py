@@ -7,6 +7,7 @@ import sys
 import cv2
 import message_filters
 import random
+import math
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -19,8 +20,6 @@ class ParticleFilter:
     """
         Particles are defined to be a 3-tuple: (x, y, heading)
     """
-
-    particles = [(80, 400, 0), (100, 20, 0), (400,100, 1.56)]
 
     def sync_callback(self, odom, laser):
         stage_x = odom.pose.pose.position.x
@@ -92,7 +91,15 @@ class ParticleFilter:
         self.tr = ptl.Transformer(stage_x, stage_y, *(self.map.shape))
 
         self.num_particles = num_particles
-        # self.initialize_particles()
+        self.initialize_particles()
+
+    def initialize_particles(self):
+        self.particles = []
+        for i in xrange(self.num_particles):
+            x = random.randint(0, self.map.shape[1] - 1)
+            y = random.randint(0, self.map.shape[0] - 1)
+            h = random.uniform(-math.pi, math.pi)
+            self.particles.append((x,y,h))
 
     def plot_particle(self, particle):
         try:
