@@ -8,16 +8,19 @@ import math
     Unless otherwise notes, all coordinates are in OpenCV coordinates."
 """
 
-def get_closest_obstacle(img, particle, max_range, angle=None):
+def get_closest_obstacle(img_clean, particle, max_range, angle_off=0):
     """
-        Make sure the img is clean - i.e. no particles.
+        Does what it's named.
+        Make sure the img is clean - i.e. it has no particles.
     """
 
-    lookup = img.item
+    lookup = img_clean.item
+    x_length = img_clean.shape[1]
+    y_length = img_clean.shape[0]
+
     px = particle[0]
     py = particle[1]
-    if angle == None:
-        angle = particle[2]
+    angle = add_angle(particle[2], angle_off)
 
     x_comp = math.sin(angle)
     y_comp = math.cos(angle)
@@ -26,12 +29,18 @@ def get_closest_obstacle(img, particle, max_range, angle=None):
         x = px + r * x_comp
         y = py + r * y_comp
 
+        if x < 0 or y < 0 or x >= x_length or y >= y_length:
+            return r
+
         if lookup((x,y)) == 0 :
             return r
 
     return max_range
 
 def highlight_particle(img, particle):
+    """
+        Draws a small circle around the particle.
+    """
     x = int (particle[0])
     y = int (particle[1])
     cv2.circle(img, (y, x), radius=3, color=0, thickness=1)
@@ -71,6 +80,10 @@ def in_free_space(img, x, y):
 
 
 def add_angle(angle_1, angle_2):
+    """
+        Adds two angles, but making sure the return value is
+        between -pi and pi.
+    """
     ret = angle_1 + angle_2
 
     if ret >= math.pi:

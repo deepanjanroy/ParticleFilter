@@ -8,6 +8,7 @@ import cv2
 import message_filters
 import random
 import math
+import mathutil
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -69,17 +70,21 @@ class ParticleFilter:
     def spin(self):
         r = rospy.Rate(10)
         while not rospy.is_shutdown():
-            # self.propagate()
-            # self.update()
             # self.resample()
 
-            # Dev
-            # self.dev_process_data()
             self.clear_particles()
             self.plot_all_particles()
 
             delta = self.calculate_delta()
             self.propagate(*delta)
+            self.update_weights()
+
+            ## dev
+            if self.weights:
+                top = sorted(self.particles, key=lambda x: self.weights[x])[:50]
+                for p in top:
+                    ptl.highlight_particle(self.map, p)
+
             cv2.imshow("Particle filter", self.map)
             cv2.waitKey(1)
             r.sleep()
@@ -121,8 +126,8 @@ class ParticleFilter:
 
         self.particles = []
         for i in xrange(self.num_particles):
-
             self.particles.append(new_particle(self))
+        self.weights = {}
 
     def plot_particle(self, particle):
         try:
@@ -160,12 +165,22 @@ class ParticleFilter:
             self.particles[i] = (x,y,h)
 
     def update_weights(self):
-        # laser = self.last_processed_state[1]
+        if self.last_processed_state is None:
+            return
 
-        # for particle in self.particles:
-        #     ptl.get_closest_obstacle(self.map_clean, particle, max_range=300)
-            # difference =
-        pass
+        laser = self.last_processed_state[1]
+        ninety = math.pi / 2
+        m_ninety = - math.pi / 2
+
+        self.weights = {}
+        for particle in self.particles:
+            d_m90 = ptl.get_closest_obstacle(self.map_clean, particle, max_range=300, angle_off=m_ninety)
+            d_0 = ptl.get_closest_obstacle(self.map_clean, particle, max_range=300, angle_off=0)
+            d_90 = ptl.get_closest_obstacle(self.map_clean, particle, max_range=300, angle_off=ninety)
+
+            diffs = (d_m90 - laser[0], d_0 - laser [1], d_90 - laser[2])
+            mean_diff = sum(diffs) / 3.0
+            self.weights[particle] = mathutil.gaussian(mean_diff, sigma_sq = 1000)
 
 
 def main():
