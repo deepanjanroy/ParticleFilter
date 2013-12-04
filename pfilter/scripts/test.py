@@ -10,7 +10,7 @@ class TestTransformations(unittest.TestCase):
                   ( (0,0,0), (0,0,0) ),
                   )
 
-    def test_all_things(self):
+    def test_stage_to_cv(self):
         tr = ptl.Transformer(50,50,500,500)
 
         for args, correct_rets in self.test_values:
