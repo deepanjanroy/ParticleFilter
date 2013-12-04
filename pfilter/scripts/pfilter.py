@@ -8,7 +8,6 @@ import cv2
 import message_filters
 import random
 
-from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 

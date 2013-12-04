@@ -18,7 +18,7 @@ def draw_direction(img, particle, length=10, thickness=1):
         everything in cv coordinates.
     """
 
-    p1 = (particle[0], particle[1])
+    p1 = (int (particle[0]), int(particle[1]))
     angle = particle[2]
     p2_x = int( p1[0] + length * math.cos(angle) )
     p2_y = int( p1[1] + length * math.sin(angle) )
@@ -56,12 +56,13 @@ def heading_from_qt(q):
 
 class Transformer:
 
-    def delta_stage_to_cv(self, state_delta):
+    def stage_to_cv(self, state_delta, offset_x=0, offset_y=0):
         """
             Convert a particle position delta from stage
             coordinates to opencv coordinates. This will
-            really only work to convert deltas, because
+            really only work properly to convert deltas, because
             I disregard the different positions of the origin.
+            Returns floats for maximum information retention.
 
             I get heading in opencv by taking atan (y/x).
             This heading increases clockwise, while in stage
@@ -78,15 +79,15 @@ class Transformer:
 
         """
 
-        dx = state_delta[0]
-        dy = state_delta[1]
-        dh = state_delta[2]
+        x = state_delta[0]
+        y = state_delta[1]
+        h = state_delta[2]
 
-        cv_dx = - int (dy * self.cv_x_factor)
-        cv_dy = int (dx * self.cv_y_factor)
-        cv_dh = -dh
+        cv_x = - y * self.cv_x_factor + offset_x
+        cv_y = x * self.cv_y_factor + offset_y
+        cv_h = -h
 
-        return (cv_dx, cv_dy, cv_dh)
+        return (cv_x, cv_y, cv_h)
 
     def __init__(self, stage_x_length, stage_y_length,
                           img_x_length, img_y_length):
