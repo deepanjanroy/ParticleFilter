@@ -31,6 +31,11 @@ def get_closest_obstacle(img, particle, max_range, angle=None):
 
     return max_range
 
+def highlight_particle(img, particle):
+    x = int (particle[0])
+    y = int (particle[1])
+    cv2.circle(img, (y, x), radius=3, color=0, thickness=1)
+
 def draw_direction(img, particle, length=10, thickness=1):
     """
         Draws a line at the direction of the heading of a

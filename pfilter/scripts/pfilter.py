@@ -25,8 +25,17 @@ class ParticleFilter:
         stage_x = odom.pose.pose.position.x
         stage_y = odom.pose.pose.position.y
         stage_orientation = odom.pose.pose.orientation
-        self.last_received_state = self.tr.stage_to_cv((stage_x, stage_y,
+        odom = self.tr.stage_to_cv((stage_x, stage_y,
                                          ptl.heading_from_qt(stage_orientation)))
+
+        minus90index = 901
+        zeroindex = 540
+        plus90index = 181
+
+        r = laser.ranges
+        laser_range = (r[minus90index], r[zeroindex], r[plus90index])
+
+        self.last_received_state = (odom, laser_range)
 
     def register_listeners(self):
         odom_sub = message_filters.Subscriber('odom', Odometry)
@@ -42,16 +51,19 @@ class ParticleFilter:
             self.last_processed_state = self.last_received_state
             return (0, 0, 0)
 
+
         # Copying over the variables so that the callback threads
         # can't change them midway through calculations.
-        rec = self.last_received_state
-        proc = self.last_processed_state
+        # Note that last_rec_state = (odom, laser)
+        laser = self.last_received_state[1]
+        rec = self.last_received_state[0]
+        proc = self.last_processed_state[0]
 
         dx = rec[0] - proc[0]
         dy = rec[1] - proc[1]
         dh = ptl.add_angle(rec[2], - proc[2])
 
-        self.last_processed_state = rec
+        self.last_processed_state = (rec, laser)
         return (dx, dy, dh)
 
     def spin(self):
@@ -148,9 +160,12 @@ class ParticleFilter:
             self.particles[i] = (x,y,h)
 
     def update_weights(self):
-        for particle in self.particles:
-            ptl.get_closest_obstacle(self.map_clean, particle, max_range=300)
-            difference =
+        # laser = self.last_processed_state[1]
+
+        # for particle in self.particles:
+        #     ptl.get_closest_obstacle(self.map_clean, particle, max_range=300)
+            # difference =
+        pass
 
 
 def main():

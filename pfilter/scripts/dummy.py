@@ -29,6 +29,7 @@ class Dummy:
     def sync_callback(self, odom, laser):
         r = laser.ranges
         minus90 = 901
+        zeroindex = 540
         plus90 = 181
         print "{0}:{1}:{2}".format(r[minus90], r[len(r) / 2], r[plus90])
 
