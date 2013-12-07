@@ -1,8 +1,9 @@
 import cv2
+import math
+
 import roslib
 roslib.load_manifest('tf')
 import tf
-import math
 
 """
     Unless otherwise notes, all coordinates are in OpenCV coordinates."
@@ -74,7 +75,7 @@ def in_free_space(img, x, y):
         or if the coordinates are out of bounds.
     """
     try:
-        return img[y, x] != 0
+        return img[x, y] != 0
     except IndexError:
         return False
 
